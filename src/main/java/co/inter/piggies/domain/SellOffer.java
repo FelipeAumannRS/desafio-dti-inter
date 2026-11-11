@@ -15,12 +15,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "sell_offers")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class SellOffer {
-    @Id private UUID id;
+    @Id
+    private UUID id;
     private String sellerId;
     private BigDecimal price;
-    @Enumerated(EnumType.STRING) private OfferStatus status;   // OPEN, EXECUTED
+    @Enumerated(EnumType.STRING)
+    private OfferStatus status;   // OPEN, EXECUTED
     private UUID transactionId;
     private BigDecimal executedPrice;
     private Instant createdAt;
