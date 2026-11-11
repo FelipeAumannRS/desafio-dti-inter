@@ -1,3 +1,18 @@
+package co.inter.piggies.domain;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
 @Entity
 @Table(name = "sell_offers")
 @Getter @Setter @NoArgsConstructor
@@ -12,5 +27,5 @@ public class SellOffer {
     private Instant executedAt;
 
     /** Devolve false se já estava executada: o Kafka pode entregar o mesmo evento duas vezes. */
-    public boolean execute(UUID transactionId, BigDecimal price, Instant at) { ... }
+    public boolean execute(UUID transactionId, BigDecimal price, Instant at) { throw new UnsupportedOperationException("TODO"); }
 }
