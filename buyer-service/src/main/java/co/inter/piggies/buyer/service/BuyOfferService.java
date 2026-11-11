@@ -65,7 +65,7 @@ public class BuyOfferService {
         BuyOffer buyOffer = buyOfferRepository.findById(id)
                 .orElseThrow(() -> notFound(id));
 
-        //Retorna a conversão da Entity em um ResponseDTO
+        // Retorna a conversão da Entity em um ResponseDTO
         return BuyOfferResponseDTO.from(buyOffer);
     }
 
@@ -103,6 +103,8 @@ public class BuyOfferService {
                 buyOfferSaved.getPrice().toPlainString(),
                 buyOfferSaved.getCreatedAt().toString()
         );
+
+        offerCreatedProducer.send("PIGGY-USD", event);
 
         // Retorna a conversão da Entidade que foi salva em um ResponseDTO
         return BuyOfferResponseDTO.from(buyOfferSaved);

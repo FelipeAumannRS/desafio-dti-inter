@@ -33,6 +33,6 @@ public interface OfferCreatedProducer {
      * Returns: None (o envio é feito de forma síncrona)                  *
      *--------------------------------------------------------------------*
      */
-    @Topic()
-    void send(@KafkaKey UUID id, OfferCreatedEventDTO event);
+    @Topic("piggies.offers.created")
+    void send(@KafkaKey String id, OfferCreatedEventDTO event);
 }
