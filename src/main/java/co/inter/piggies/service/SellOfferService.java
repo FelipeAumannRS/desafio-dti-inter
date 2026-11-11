@@ -42,7 +42,7 @@ public class SellOfferService {
         OfferCreated event = new OfferCreated(
                 UUID.randomUUID(),
                 savedOffer.getId(),
-                "OPEN",
+                "SELL",
                 sellerId,
                 price,
                 createdAt
