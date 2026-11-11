@@ -1,0 +1,26 @@
+# Aponta para o docker-compose.yml da raiz. Nos testes, IntegrationTest sobrescreve com os Testcontainers.
+micronaut:
+  application:
+    name: seller-service
+  server:
+    port: 8091
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/piggies
+    username: piggies
+    password: piggies
+    driver-class-name: org.postgresql.Driver
+    db-type: postgres
+    dialect: POSTGRES
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+
+kafka:
+  bootstrap:
+    servers: localhost:9092

@@ -30,3 +30,13 @@ Cada entrada abaixo registra o pedido feito à IA e o que ela produziu. Todo có
 **Pedido:** esboço técnico, em imagem, dividindo o trabalho entre as 4 pessoas da call.
 
 **Resultado:** `docs/arquitetura/slp-divisao-time.png` (fonte: `slp-divisao-time.html`, renderizado com Edge headless). Dev 1 Buyer, Dev 2 Seller, Dev 3 matching engine do Coordinator, Dev 4 orquestração e liquidação do Coordinator, mais o combinado do time e o plano de 90 minutos.
+
+## 5. Passo a passo e estrutura dos serviços
+
+**Pedido:** imagem no README, um passo a passo por dev e a estrutura dos três serviços na branch base, para o time todo usar.
+
+**Resultado:**
+
+- `README.md` com o diagrama, a tabela de serviços e portas e os links.
+- `docs/passo-a-passo/`: passos comuns, integração ponta a ponta e um guia por dev (entidade, evento, endpoints ou listener, testes unitários e de integração).
+- `buyer-service/`, `seller-service/` e `transaction-coordinator/` gerados com o `mn create-app` corrigido; `application.yml` com as portas 8090, 8091 e 8092 e o Postgres e o Kafka do `docker-compose.yml`; a classe `IntegrationTest` da raiz copiada para cada serviço e o teste gerado estendendo ela. Os três compilam (`mvn test-compile`).
