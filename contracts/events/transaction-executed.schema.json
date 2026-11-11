@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:piggies:events:transaction-executed:v1",
+  "title": "TransactionExecuted",
+  "description": "Publicado pelo PiggiesTransactionCoordinator no tópico piggies.transactions.executed depois de debitar 1 Piggy do vendedor e creditar ao comprador. Consumido pelo PiggiesBuyerService e pelo PiggiesSellerService para marcar as ofertas como EXECUTED. Chave da mensagem: transactionId.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "transactionId", "buyOfferId", "sellOfferId", "buyerId", "sellerId", "price", "quantity", "executedAt"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "transactionId": { "type": "string", "format": "uuid" },
+    "buyOfferId": { "type": "string", "format": "uuid" },
+    "sellOfferId": { "type": "string", "format": "uuid" },
+    "buyerId": { "type": "string", "minLength": 1 },
+    "sellerId": { "type": "string", "minLength": 1 },
+    "price": { "type": "number", "exclusiveMinimum": 0, "description": "Valor médio entre o preço de compra e o de venda, em USD por 1 Piggy" },
+    "quantity": { "const": 1, "description": "Ofertas são sempre de 1 Piggy" },
+    "executedAt": { "type": "string", "format": "date-time" }
+  }
+}

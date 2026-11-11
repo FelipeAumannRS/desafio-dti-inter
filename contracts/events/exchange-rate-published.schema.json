@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:piggies:events:exchange-rate-published:v1",
+  "title": "ExchangeRatePublished",
+  "description": "Publicado pelo PiggiesTransactionCoordinator no tópico piggies.exchange-rate.published a cada transação executada. Consumido por outros sistemas. Chave da mensagem: PIGGY-USD.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "transactionId", "pair", "rate", "publishedAt"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "transactionId": { "type": "string", "format": "uuid" },
+    "pair": { "const": "PIGGY/USD" },
+    "rate": { "type": "number", "exclusiveMinimum": 0, "description": "USD por 1 Piggy, igual ao preço da transação" },
+    "publishedAt": { "type": "string", "format": "date-time" }
+  }
+}

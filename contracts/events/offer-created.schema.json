@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:piggies:events:offer-created:v1",
+  "title": "OfferCreated",
+  "description": "Publicado pelo PiggiesBuyerService (side=BUY) e pelo PiggiesSellerService (side=SELL) no tópico piggies.offers.created. Consumido pelo PiggiesTransactionCoordinator. Chave da mensagem: PIGGY-USD (constante), para todas as ofertas caírem na mesma partição e serem casadas na ordem de chegada.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "offerId", "side", "userId", "price", "createdAt"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "offerId": { "type": "string", "format": "uuid" },
+    "side": { "type": "string", "enum": ["BUY", "SELL"] },
+    "userId": { "type": "string", "minLength": 1, "description": "buyerId (BUY) ou sellerId (SELL)" },
+    "price": { "type": "number", "exclusiveMinimum": 0, "description": "USD por 1 Piggy" },
+    "createdAt": { "type": "string", "format": "date-time" }
+  }
+}

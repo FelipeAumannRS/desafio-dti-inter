@@ -1,0 +1,107 @@
+openapi: 3.1.0
+info:
+  title: PiggiesSellerService
+  version: 1.0.0
+  description: |
+    Ponto de entrada das ofertas de venda (sempre 1 Piggy por oferta).
+    Assíncrono: a oferta é aceita na hora (202) e publicada no tópico piggies.offers.created.
+    O match acontece depois, no PiggiesTransactionCoordinator; o cliente acompanha o status pelo GET.
+paths:
+  /sell-offers:
+    post:
+      operationId: createSellOffer
+      summary: Cria uma oferta de venda de 1 Piggy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSellOfferRequest'
+      responses:
+        '202':
+          description: Oferta aceita. O match é processado de forma assíncrona.
+          headers:
+            Location:
+              description: URL da oferta, para acompanhar o status
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellOffer'
+        '400':
+          description: Requisição inválida
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /sell-offers/{offerId}:
+    get:
+      operationId: getSellOffer
+      summary: Consulta uma oferta de venda
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Oferta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellOffer'
+        '404':
+          description: Oferta não encontrada
+components:
+  schemas:
+    CreateSellOfferRequest:
+      type: object
+      required: [sellerId, price]
+      properties:
+        sellerId:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          exclusiveMinimum: 0
+          description: Por quantos USD o vendedor aceita vender 1 Piggy
+    SellOffer:
+      type: object
+      required: [offerId, sellerId, price, status, createdAt]
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        sellerId:
+          type: string
+        price:
+          type: number
+        status:
+          type: string
+          enum: [OPEN, EXECUTED]
+        transactionId:
+          type: [string, 'null']
+          format: uuid
+        executedPrice:
+          type: [number, 'null']
+          description: Valor médio entre compra e venda, pelo qual a transação foi executada
+        createdAt:
+          type: string
+          format: date-time
+        executedAt:
+          type: [string, 'null']
+          format: date-time
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
