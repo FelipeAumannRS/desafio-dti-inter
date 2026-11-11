@@ -13,7 +13,7 @@ Live code do Inter: três microsserviços Micronaut que fazem o leilão de Piggi
 - Contratos (OpenAPI e JSON Schema dos eventos): [contracts/](contracts/)
 - Passo a passo por dev: [docs/passo-a-passo/](docs/passo-a-passo/)
 - Uso de IA (prompts e decisões): [docs/ai/](docs/ai/)
-- Infra local (Postgres e Kafka): `docker compose up -d`
+- Infra local (Postgres e Kafka): `docker compose up -d` e depois `./infra/create-kafka-topics.sh`
 - A raiz tem o app base do time, com os smoke tests de infraestrutura e a classe `IntegrationTest` que os serviços reaproveitam.
 
 ## Stack

@@ -1,4 +1,4 @@
-# Dev 4 — Orquestração do Coordinator (Kafka + liquidação)
+# Dev 4 — Orquestração do Coordinator (Kafka + liquidação) · Felipe
 
 Pasta `transaction-coordinator/` · pacote `co.inter.piggies.coordinator` · porta 8092 · branch `dev4-coordinator`
 Consome `contracts/events/offer-created.schema.json` · publica `contracts/events/transaction-executed.schema.json` e `contracts/events/exchange-rate-published.schema.json`
