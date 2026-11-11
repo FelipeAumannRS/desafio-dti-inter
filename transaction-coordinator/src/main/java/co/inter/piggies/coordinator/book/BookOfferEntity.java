@@ -1,6 +1,8 @@
 package co.inter.piggies.coordinator.book;
 
 import co.inter.piggies.coordinator.event.OfferCreated;
+import co.inter.piggies.coordinator.matching.BookOffer;
+import co.inter.piggies.coordinator.matching.Side;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,6 +41,11 @@ public class BookOfferEntity {
 
     @Enumerated(EnumType.STRING)
     private BookOfferStatus status;
+
+    /** O que o matching engine enxerga desta oferta. */
+    public BookOffer toBookOffer() {
+        return new BookOffer(offerId, Side.valueOf(side), userId, price, createdAt);
+    }
 
     public static BookOfferEntity open(OfferCreated event) {
         BookOfferEntity offer = new BookOfferEntity();

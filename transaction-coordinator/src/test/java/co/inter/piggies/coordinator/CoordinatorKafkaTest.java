@@ -44,14 +44,14 @@ class CoordinatorKafkaTest extends IntegrationTest {
         UUID offerId = UUID.randomUUID();
 
         offers.send(Topics.MARKET_KEY, new OfferCreated(UUID.randomUUID(), offerId, "SELL", "seller-A",
-                new BigDecimal("20.00"), Instant.now()));
+                new BigDecimal("1000.00"), Instant.now()));
 
         // O consumo é assíncrono: espera o listener gravar, sem Thread.sleep.
         await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
                 assertThat(book.findById(offerId)).hasValueSatisfying(offer -> {
                     assertThat(offer.getSide()).isEqualTo("SELL");
                     assertThat(offer.getUserId()).isEqualTo("seller-A");
-                    assertThat(offer.getPrice()).isEqualByComparingTo("20");
+                    assertThat(offer.getPrice()).isEqualByComparingTo("1000");
                     assertThat(offer.getStatus()).isEqualTo(BookOfferStatus.OPEN);
                 }));
     }
@@ -59,14 +59,14 @@ class CoordinatorKafkaTest extends IntegrationTest {
     @Test
     void sameOfferDeliveredTwiceIsStoredOnce() {
         OfferCreated event = new OfferCreated(UUID.randomUUID(), UUID.randomUUID(), "BUY", "buyer-B",
-                new BigDecimal("10.00"), Instant.now());
+                new BigDecimal("0.10"), Instant.now());
         UUID marker = UUID.randomUUID();
 
         offers.send(Topics.MARKET_KEY, event);
         offers.send(Topics.MARKET_KEY, event);
         // Mesma partição, mesma ordem: quando a oferta "marcador" aparece, as duas anteriores já foram processadas.
         offers.send(Topics.MARKET_KEY, new OfferCreated(UUID.randomUUID(), marker, "BUY", "buyer-B",
-                new BigDecimal("11.00"), Instant.now()));
+                new BigDecimal("0.11"), Instant.now()));
 
         await().atMost(Duration.ofSeconds(30)).until(() -> book.existsById(marker));
         assertThat(book.findById(event.offerId())).isPresent();
