@@ -3,6 +3,7 @@ package co.inter.piggies.controller;
 import co.inter.piggies.domain.CreateSellOfferRequest;
 import co.inter.piggies.domain.SellOffer;
 import co.inter.piggies.domain.SellOfferResponse;
+import co.inter.piggies.service.SellOfferService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -20,15 +21,34 @@ import java.util.UUID;
 @ExecuteOn(TaskExecutors.BLOCKING)
 public class SellOfferController {
 
+    private final SellOfferService service;
+
+    public SellOfferController(SellOfferService service) {
+        this.service = service;
+    }
+
     @Post
     HttpResponse<SellOfferResponse> create(@Body @Valid CreateSellOfferRequest request) {
-        // TODO Mike: depende do SellOfferService, que ainda não existe
-        // SellOffer offer = service.create(request.sellerId(), request.price());   // grava OPEN e publica
-        // return HttpResponse.accepted(URI.create("/sell-offers/" + offer.getId()))
-        //         .body(SellOfferResponse.from(offer));
-        throw new UnsupportedOperationException("TODO");
+        SellOffer offer = service.create(request.sellerId(), request.price());
+        return HttpResponse.accepted(URI.create("/sell-offers/" + offer.getId()))
+                .body(toResponse(offer));
     }
 
     @Get("/{offerId}")
-    Optional<SellOfferResponse> get(UUID offerId) { throw new UnsupportedOperationException("TODO"); }   // Optional vazio vira 404
+    Optional<SellOfferResponse> get(UUID offerId) {
+        return service.get(offerId).map(SellOfferController::toResponse);
+    }
+
+    private static SellOfferResponse toResponse(SellOffer offer) {
+        return new SellOfferResponse(
+                offer.getId(),
+                offer.getSellerId(),
+                offer.getPrice(),
+                offer.getStatus(),
+                offer.getTransactionId(),
+                offer.getExecutedPrice(),
+                offer.getCreatedAt(),
+                offer.getExecutedAt()
+        );
+    }
 }
