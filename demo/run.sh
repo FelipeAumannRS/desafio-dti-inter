@@ -23,6 +23,13 @@ echo "3) Comprador C cria oferta de \$30 por 1 Piggy";  offer BUY comprador-C 30
 echo "   -> match A x C a (30 + 20) / 2 = \$25"
 echo
 
+echo "Prioridade de preço (engine do Fernando)"
+echo "4) Vendedor D cria oferta de \$22";   offer SELL vendedor-D 22;   sleep 2
+echo "5) Vendedor E cria oferta de \$18";   offer SELL vendedor-E 18;   sleep 2
+echo "6) Comprador F cria oferta de \$25";  offer BUY comprador-F 25;  sleep 3
+echo "   -> D e E servem, F casa com a venda mais barata: E, a (25 + 18) / 2 = \$21.5"
+echo
+
 echo "== Evento publicado: piggies.transactions.executed"
 kafka kafka-console-consumer.sh --bootstrap-server kafka:19092 --topic piggies.transactions.executed \
   --from-beginning --timeout-ms 5000 --property print.key=true 2>/dev/null || true
