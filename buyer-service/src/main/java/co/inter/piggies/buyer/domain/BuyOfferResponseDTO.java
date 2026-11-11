@@ -1,6 +1,7 @@
 package co.inter.piggies.buyer.domain;
 
 import io.micronaut.serde.annotation.Serdeable;
+import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -15,22 +16,22 @@ import java.util.UUID;
  */
 @Serdeable
 public record BuyOfferResponseDTO(
-        UUID id,
+        String id,
+        String price,
         String status,
-        BigDecimal price,
-        BigDecimal priceExecuted,
-        OffsetDateTime createdAt,
-        OffsetDateTime executedAt
-
+        @Nullable String executedPrice,
+        String createdAt,
+        @Nullable String executedAt
 ) {
-    public static BuyOfferResponseDTO from(BuyOffer buyOffer) {
+
+    public static BuyOfferResponseDTO from(BuyOffer offer) {
         return new BuyOfferResponseDTO(
-                buyOffer.getId(),
-                buyOffer.getStatus(),
-                buyOffer.getPrice(),
-                buyOffer.getExecutedPrice(),
-                buyOffer.getCreatedAt(),
-                buyOffer.getExecutedAt()
+                offer.getId().toString(),
+                offer.getPrice().toPlainString(),
+                offer.getStatus(),
+                offer.getExecutedPrice() == null ? null : offer.getExecutedPrice().toPlainString(),
+                offer.getCreatedAt().toString(),
+                offer.getExecutedAt() == null ? null : offer.getExecutedAt().toString()
         );
     }
 }

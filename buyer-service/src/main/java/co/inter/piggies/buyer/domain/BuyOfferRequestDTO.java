@@ -1,8 +1,12 @@
 package co.inter.piggies.buyer.domain;
 
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  *-------------------------------------------------------------------------*
@@ -13,7 +17,16 @@ import java.math.BigDecimal;
  */
 
 @Serdeable
+@Introspected
 public record BuyOfferRequestDTO(
-        BigDecimal price
+
+        @NotBlank(message = "price é obrigatório")
+        @Pattern(regexp = "^(?!0+(\\.0{1,2})?$)[0-9]+(\\.[0-9]{1,2})?$",
+                message = "price deve ser um decimal positivo, ex.: 20.00")
+        String price
 ) {
+
+    public BigDecimal priceAsDecimal() {
+        return new BigDecimal(price).setScale(2, RoundingMode.HALF_UP);
+    }
 }

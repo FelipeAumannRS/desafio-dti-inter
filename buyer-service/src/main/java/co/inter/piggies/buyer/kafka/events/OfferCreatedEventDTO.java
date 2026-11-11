@@ -12,6 +12,10 @@ import io.micronaut.serde.annotation.Serdeable;
 
 @Serdeable
 public record OfferCreatedEventDTO(
-
+        String eventId,
+        String offerId,
+        String side,
+        String price,
+        String createdAt
 ) {
 }
