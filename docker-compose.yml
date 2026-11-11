@@ -1,75 +1,100 @@
-# Infra local para RODAR a aplicação (mn:run / IntelliJ) durante o live code.
-# Os TESTES continuam usando Testcontainers (sobem containers próprios, em portas aleatórias),
-# então este compose não interfere neles.
-#
-# Subir:            docker compose up -d
-# Ver status:       docker compose ps
-# Logs do Kafka:    docker compose logs -f kafka
-# Derrubar:         docker compose down        (mantém os dados do Postgres)
-# Derrubar e zerar: docker compose down -v     (apaga os dados)
-# Com a UI do Kafka (opcional): docker compose --profile ui up -d   ->  http://localhost:8081
-
+name: piggies
 services:
-
   postgres:
-    image: postgres:16-alpine            # mesma imagem do PDF / Testcontainers
-    container_name: piggies-postgres
+    image: postgres:16-alpine
     environment:
-      POSTGRES_DB: piggies
-      POSTGRES_USER: piggies
-      POSTGRES_PASSWORD: piggies
+      POSTGRES_DB: ${POSTGRES_DB:-piggies}
+      POSTGRES_USER: ${POSTGRES_USER:-piggies}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-piggies-local}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U piggies -d piggies"]
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
       interval: 5s
-      timeout: 3s
-      retries: 10
+      timeout: 5s
+      retries: 20
+
+  pgadmin:
+    image: dpage/pgadmin4:9.19.0
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@piggies.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-piggies-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  kafka-storage-init:
+    image: apache/kafka:4.3.1
+    user: "0:0"
+    entrypoint: [/bin/sh, -ec]
+    command: ["chown -R 1000:1000 /var/lib/kafka/data"]
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    restart: "no"
 
   kafka:
-    image: apache/kafka-native:4.3.1     # mesma imagem do PDF / Testcontainers
-    container_name: piggies-kafka
+    image: apache/kafka-native:4.3.1
+    depends_on:
+      kafka-storage-init:
+        condition: service_completed_successfully
     ports:
-      - "9092:9092"                      # usada pela aplicação rodando na sua máquina
+      - "127.0.0.1:${KAFKA_PORT:-9092}:9092"
     environment:
-      # Modo KRaft (sem Zookeeper): um único nó que é broker e controller ao mesmo tempo
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-
-      # Dois "endereços" para clientes:
-      #  - PLAINTEXT (localhost:9092): para a sua aplicação, fora do Docker
-      #  - INTERNAL  (kafka:19092):    para outros containers (ex.: a Kafka UI)
-      KAFKA_LISTENERS: PLAINTEXT://:9092,INTERNAL://:19092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://:19092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-
-      # Com um único broker, todo fator de replicação precisa ser 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: [CMD-SHELL, 'nc -z localhost 9092']
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
 
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"   # cria o tópico no primeiro envio
-      KAFKA_NUM_PARTITIONS: 3                   # partições padrão dos tópicos criados automaticamente
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0 # consumer começa a receber mais rápido
-
-  # OPCIONAL: interface web para ver tópicos, mensagens, chaves e consumer groups.
-  # Só sobe com:  docker compose --profile ui up -d
-  kafka-ui:
-    image: ghcr.io/kafbat/kafka-ui:latest
-    container_name: piggies-kafka-ui
-    profiles: ["ui"]
+  kafka-init:
+    image: apache/kafka:4.3.1
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - |
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic piggies.bank-created.v1 --partitions 3 --replication-factor 1 --config min.insync.replicas=1 --config retention.ms=604800000
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic piggies.bank-created.v1.dlt --partitions 3 --replication-factor 1 --config min.insync.replicas=1 --config retention.ms=1209600000
+    restart: "no"
+
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.4.2
     ports:
-      - "8081:8080"                      # 8081 para não brigar com a aplicação (8080)
+      - "127.0.0.1:${KAFKA_UI_PORT:-8081}:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_NAME: local-piggies
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:19092
+      DYNAMIC_CONFIG_ENABLED: "false"
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
 
 volumes:
-  postgres_data:
+  postgres-data:
+  kafka-data:
+  pgadmin-data:
