@@ -1,6 +1,7 @@
--- Schema gerado pelo Hibernate (hbm2ddl: update) a partir das @Entity, exportado do Postgres do docker-compose com pg_dump --schema-only.
--- Coordinator: book_offers, trades, wallets. Seller (entidade do Mike, ainda no app da raiz): sell_offers.
+-- Schema gerado pelo Hibernate (hbm2ddl: update) a partir das @Entity, exportado do Postgres do docker-compose.
+-- Atualize com ./infra/dump-schema.sh; para recriar as tabelas depois de mudar uma entidade, ./infra/reset-db.sh.
 
+COMMENT ON SCHEMA public IS '';
 CREATE TABLE public.book_offers (
     offer_id uuid NOT NULL,
     created_at timestamp(6) with time zone,
