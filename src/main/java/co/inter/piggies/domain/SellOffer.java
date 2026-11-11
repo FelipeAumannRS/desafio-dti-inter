@@ -1,6 +1,10 @@
 package co.inter.piggies.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,8 +30,6 @@ public class SellOffer {
     private Instant createdAt;
     private Instant executedAt;
 
-    /**
-     * Devolve false se já estava executada: o Kafka pode entregar o mesmo evento duas vezes.
-     */
-    public boolean execute(UUID transactionId, BigDecimal price, Instant at) { ...}
+    /** Devolve false se já estava executada: o Kafka pode entregar o mesmo evento duas vezes. */
+    public boolean execute(UUID transactionId, BigDecimal price, Instant at) { throw new UnsupportedOperationException("TODO"); }
 }

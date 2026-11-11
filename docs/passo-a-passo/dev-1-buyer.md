@@ -1,4 +1,4 @@
-# Dev 1 — PiggiesBuyerService (borda assíncrona)
+# Dev 1 — PiggiesBuyerService (borda assíncrona) · Ronaldo
 
 Pasta `buyer-service/` · pacote `co.inter.piggies.buyer` · porta 8090 · branch `dev1-buyer`
 Contrato: `contracts/piggies-buyer-service.openapi.yaml` · publica `contracts/events/offer-created.schema.json` · consome `contracts/events/transaction-executed.schema.json`

@@ -40,3 +40,13 @@ Cada entrada abaixo registra o pedido feito à IA e o que ela produziu. Todo có
 - `README.md` com o diagrama, a tabela de serviços e portas e os links.
 - `docs/passo-a-passo/`: passos comuns, integração ponta a ponta e um guia por dev (entidade, evento, endpoints ou listener, testes unitários e de integração).
 - `buyer-service/`, `seller-service/` e `transaction-coordinator/` gerados com o `mn create-app` corrigido; `application.yml` com as portas 8090, 8091 e 8092 e o Postgres e o Kafka do `docker-compose.yml`; a classe `IntegrationTest` da raiz copiada para cada serviço e o teste gerado estendendo ela. Os três compilam (`mvn test-compile`).
+
+## 6. Infra do Kafka (Felipe, orquestração)
+
+**Pedido:** subir o docker-compose existente, criar as 3 filas do contrato e provar que o Kafka funciona.
+
+**Resultado:**
+
+- `docker compose up -d` (Postgres e Kafka do compose da raiz, sem alterações).
+- `infra/create-kafka-topics.sh`: cria `piggies.offers.created` (1 partição, para o Coordinator ler as ofertas em ordem), `piggies.transactions.executed` (3) e `piggies.exchange-rate.published` (1). A imagem `kafka-native` não tem CLI, então o script usa a `apache/kafka:4.3.1` como cliente na rede do compose.
+- Teste de ida e volta pela porta que os serviços usam (`localhost:9092`): um cliente Java com `kafka-clients` listou os 3 tópicos, publicou e consumiu uma mensagem num tópico de teste (`piggies.smoke`, apagado depois).

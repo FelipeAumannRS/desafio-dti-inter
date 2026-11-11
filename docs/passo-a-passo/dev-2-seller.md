@@ -1,4 +1,4 @@
-# Dev 2 — PiggiesSellerService (borda assíncrona)
+# Dev 2 — PiggiesSellerService (borda assíncrona) · Mike
 
 Pasta `seller-service/` · pacote `co.inter.piggies.seller` · porta 8091 · branch `dev2-seller`
 Contrato: `contracts/piggies-seller-service.openapi.yaml` · publica `contracts/events/offer-created.schema.json` · consome `contracts/events/transaction-executed.schema.json`

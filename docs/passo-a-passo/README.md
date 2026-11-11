@@ -2,12 +2,12 @@
 
 ![Divisão do time](../arquitetura/slp-divisao-time.png)
 
-| Dev | Guia | Pasta | Porta | Branch |
-|---|---|---|---|---|
-| 1 | [Buyer](dev-1-buyer.md) | `buyer-service/` | 8090 | `dev1-buyer` |
-| 2 | [Seller](dev-2-seller.md) | `seller-service/` | 8091 | `dev2-seller` |
-| 3 | [Matching engine](dev-3-matching-engine.md) | `transaction-coordinator/` (pacote `matching`) | — | `dev3-matching` |
-| 4 | [Orquestração](dev-4-orquestracao.md) | `transaction-coordinator/` | 8092 | `dev4-coordinator` |
+| Dev | Quem | Guia | Pasta | Porta | Branch |
+|---|---|---|---|---|---|
+| 1 | Ronaldo | [Buyer](dev-1-buyer.md) | `buyer-service/` | 8090 | `dev1-buyer` |
+| 2 | Mike | [Seller](dev-2-seller.md) | `seller-service/` | 8091 | `dev2-seller` |
+| 3 | Fernando | [Matching engine](dev-3-matching-engine.md) | `transaction-coordinator/` (pacote `matching`) | — | `dev3-matching` |
+| 4 | Felipe | [Orquestração](dev-4-orquestracao.md) | `transaction-coordinator/` | 8092 | `dev4-coordinator` |
 
 Portas 8080 (app da raiz) e 8081 (Kafka UI do docker-compose) ficam livres.
 
@@ -43,7 +43,7 @@ Portas 8080 (app da raiz) e 8081 (Kafka UI do docker-compose) ficam livres.
 
 ## Integração ponta a ponta (50–65 min)
 
-1. Na raiz: `docker compose up -d`
+1. Na raiz: `docker compose up -d` e depois `./infra/create-kafka-topics.sh` (cria os 3 tópicos do contrato)
 2. Em cada pasta de serviço: `mvn mn:run`
 3. Rode o exemplo do enunciado (no PowerShell use `curl.exe`, não `curl`):
 
