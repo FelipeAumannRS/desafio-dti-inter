@@ -3,6 +3,7 @@ package co.inter.piggies.controller;
 import co.inter.piggies.domain.CreateSellOfferRequest;
 import co.inter.piggies.domain.SellOffer;
 import co.inter.piggies.domain.SellOfferResponse;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -12,7 +13,6 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 import jakarta.validation.Valid;
 
 import java.net.URI;
-import io.micronaut.http.HttpResponse;
 import java.util.Optional;
 import java.util.UUID;
 
