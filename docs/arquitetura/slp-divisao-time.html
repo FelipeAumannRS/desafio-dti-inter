@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SLP — divisão do time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1600px; height: 1000px; background: #f6f7f9; font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; }
+  #canvas { position: relative; width: 1600px; height: 1000px; }
+  .abs { position: absolute; }
+  h1 { position: absolute; left: 30px; top: 16px; font-size: 28px; font-weight: 700; }
+  .subtitle { left: 30px; top: 56px; font-size: 15px; color: #6b7280; }
+  .client { background: #fff; border: 2px solid #64748b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; text-align: center; }
+  .box { background: #fff; border: 2px solid var(--c); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .box .head { background: var(--c); color: #fff; padding: 7px 12px; font-size: 15px; font-weight: 700; }
+  .box .head small { font-weight: 500; opacity: .9; }
+  .box ul { padding: 8px 12px 0 28px; font-size: 13.5px; line-height: 1.38; }
+  .box li { margin-bottom: 3px; }
+  .box .foot { position: absolute; left: 12px; right: 12px; bottom: 8px; display: flex; justify-content: space-between; font-size: 12.5px; color: #6b7280; }
+  .box .foot b { color: #1f2937; }
+  .dev1 { --c: #2563eb; } .dev2 { --c: #16a34a; } .dev3 { --c: #9333ea; } .dev4 { --c: #ea580c; }
+  .container { border: 2px dashed #94a3b8; border-radius: 14px; background: rgba(255,255,255,.55); }
+  .container .label { position: absolute; left: 14px; top: 8px; font-size: 15px; font-weight: 700; color: #334155; }
+  .kafka { background: #111827; border-radius: 14px; }
+  .kafka .label { position: absolute; left: 0; right: 0; top: 10px; text-align: center; color: #fff; font-weight: 700; font-size: 16px; }
+  .topic { background: #fff; border-radius: 10px; padding: 7px 10px; font-size: 13px; line-height: 1.3; }
+  .topic code { font-family: Consolas, monospace; font-size: 12.5px; font-weight: 700; color: #111827; }
+  .topic span { color: #6b7280; }
+  .other { background: #fff; border: 2px solid #64748b; border-radius: 10px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .panel { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 14px 18px; }
+  .panel h2 { font-size: 17px; margin-bottom: 8px; }
+  .panel ul { padding-left: 20px; font-size: 14px; line-height: 1.5; }
+  .bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; margin: 6px 0 12px; }
+  .bar div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12.5px; font-weight: 700; }
+  .steps { display: grid; grid-template-columns: 70px 1fr; row-gap: 3px; font-size: 14px; }
+  .steps .t { font-weight: 700; color: #374151; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+  .legend { right: 30px; top: 24px; font-size: 13px; color: #374151; display: flex; gap: 18px; align-items: center; }
+  .legend svg { vertical-align: middle; }
+  .lbl { position: absolute; font-size: 12px; font-weight: 600; color: #374151; background: #f6f7f9; padding: 0 3px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="canvas">
+  <h1>SLP — Sistema de Leilão de Porquinhos</h1>
+  <div class="abs subtitle">Divisão do time · 4 devs · contract-first · borda assíncrona · contratos em <b>contracts/</b></div>
+
+  <div class="abs legend">
+    <span><svg width="44" height="10"><line x1="0" y1="5" x2="36" y2="5" stroke="#0f172a" stroke-width="2.5"/><path d="M36,0 L44,5 L36,10 z" fill="#0f172a"/></svg> publica</span>
+    <span><svg width="44" height="10"><line x1="0" y1="5" x2="36" y2="5" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="6 4"/><path d="M36,0 L44,5 L36,10 z" fill="#0f172a"/></svg> consome</span>
+    <span><svg width="44" height="10"><line x1="0" y1="5" x2="36" y2="5" stroke="#64748b" stroke-width="2"/><path d="M36,0 L44,5 L36,10 z" fill="#64748b"/></svg> HTTP</span>
+  </div>
+
+  <!-- arrows -->
+  <svg class="abs" style="left:0;top:0" width="1600" height="1000">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0f172a"/></marker>
+      <marker id="ahg" viewBox="0 0 10 10" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+    </defs>
+    <!-- HTTP -->
+    <line x1="170" y1="220" x2="218" y2="220" stroke="#64748b" stroke-width="2" marker-end="url(#ahg)"/>
+    <line x1="170" y1="530" x2="218" y2="530" stroke="#64748b" stroke-width="2" marker-end="url(#ahg)"/>
+    <!-- publish OfferCreated -->
+    <line x1="600" y1="182" x2="700" y2="182" stroke="#0f172a" stroke-width="2.5" marker-end="url(#ah)"/>
+    <line x1="600" y1="470" x2="700" y2="210" stroke="#0f172a" stroke-width="2.5" marker-end="url(#ah)"/>
+    <!-- consume TransactionExecuted -->
+    <line x1="702" y1="362" x2="602" y2="318" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+    <line x1="702" y1="392" x2="602" y2="575" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+    <!-- coordinator consumes offers -->
+    <line x1="948" y1="182" x2="1033" y2="182" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+    <!-- coordinator publishes -->
+    <line x1="1035" y1="300" x2="950" y2="372" stroke="#0f172a" stroke-width="2.5" marker-end="url(#ah)"/>
+    <line x1="1035" y1="345" x2="950" y2="566" stroke="#0f172a" stroke-width="2.5" marker-end="url(#ah)"/>
+    <!-- exchange rate to other systems -->
+    <line x1="825" y1="604" x2="825" y2="666" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+    <!-- orchestration calls matching engine -->
+    <line x1="1220" y1="370" x2="1220" y2="406" stroke="#0f172a" stroke-width="2.5" marker-end="url(#ah)"/>
+  </svg>
+
+  <div class="lbl" style="left:178px;top:197px">HTTP</div>
+  <div class="lbl" style="left:178px;top:507px">HTTP</div>
+  <div class="lbl" style="left:604px;top:160px">BUY</div>
+  <div class="lbl" style="left:652px;top:236px">SELL</div>
+  <div class="lbl" style="left:1230px;top:378px">chama</div>
+
+  <!-- clients -->
+  <div class="abs client" style="left:30px;top:190px;width:140px;height:60px">Comprador</div>
+  <div class="abs client" style="left:30px;top:500px;width:140px;height:60px">Vendedor</div>
+
+  <!-- Dev 1: Buyer -->
+  <div class="abs box dev1" style="left:220px;top:95px;width:380px;height:255px">
+    <div class="head">DEV 1 · PiggiesBuyerService <small>· borda assíncrona</small></div>
+    <ul>
+      <li><b>POST /buy-offers</b>: grava a oferta OPEN, publica OfferCreated e responde <b>202</b> + Location</li>
+      <li><b>GET /buy-offers/{id}</b>: status da oferta</li>
+      <li>Consome TransactionExecuted → <b>EXECUTED</b> + preço</li>
+      <li>Testes: unitário + integração (Testcontainers)</li>
+    </ul>
+    <div class="foot"><span>Postgres · buy_offers</span><span>Responsável: <b>________________</b></span></div>
+  </div>
+
+  <!-- Dev 2: Seller -->
+  <div class="abs box dev2" style="left:220px;top:395px;width:380px;height:255px">
+    <div class="head">DEV 2 · PiggiesSellerService <small>· borda assíncrona</small></div>
+    <ul>
+      <li><b>POST /sell-offers</b>: grava a oferta OPEN, publica OfferCreated e responde <b>202</b> + Location</li>
+      <li><b>GET /sell-offers/{id}</b>: status da oferta</li>
+      <li>Consome TransactionExecuted → <b>EXECUTED</b> + preço</li>
+      <li>Testes: unitário + integração (Testcontainers)</li>
+    </ul>
+    <div class="foot"><span>Postgres · sell_offers</span><span>Responsável: <b>________________</b></span></div>
+  </div>
+
+  <!-- Kafka -->
+  <div class="abs kafka" style="left:690px;top:95px;width:270px;height:550px">
+    <div class="label">Kafka</div>
+  </div>
+  <div class="abs topic" style="left:702px;top:150px;width:246px;height:64px">
+    <code>piggies.offers.created</code><br><span>OfferCreated · chave PIGGY-USD</span>
+  </div>
+  <div class="abs topic" style="left:702px;top:340px;width:246px;height:64px">
+    <code>piggies.transactions.executed</code><br><span>TransactionExecuted</span>
+  </div>
+  <div class="abs topic" style="left:702px;top:540px;width:246px;height:64px">
+    <code>piggies.exchange-rate.published</code><br><span>ExchangeRatePublished</span>
+  </div>
+  <div class="abs other" style="left:700px;top:668px;width:250px;height:44px">Outros sistemas · taxa PIGGY/USD</div>
+
+  <!-- Coordinator -->
+  <div class="abs container" style="left:1020px;top:95px;width:400px;height:550px">
+    <div class="label">PiggiesTransactionCoordinator</div>
+  </div>
+
+  <!-- Dev 4: orchestration -->
+  <div class="abs box dev4" style="left:1035px;top:130px;width:370px;height:240px">
+    <div class="head">DEV 4 · Orquestração <small>· Kafka + liquidação</small></div>
+    <ul>
+      <li>Consome OfferCreated e guarda o livro de ofertas</li>
+      <li>Chama o matching engine</li>
+      <li>Debita 1 Piggy do vendedor, credita ao comprador e grava a transação</li>
+      <li>Publica TransactionExecuted e ExchangeRatePublished</li>
+      <li>Teste de integração: oferta entra → eventos saem</li>
+    </ul>
+    <div class="foot"><span>Postgres · offers, wallets, transactions</span><span>Resp.: <b>__________</b></span></div>
+  </div>
+
+  <!-- Dev 3: matching engine -->
+  <div class="abs box dev3" style="left:1035px;top:410px;width:370px;height:225px">
+    <div class="head">DEV 3 · Matching engine <small>· Java puro</small></div>
+    <ul>
+      <li>Match quando <b>compra ≥ venda</b></li>
+      <li>Compra pega a venda mais barata; venda pega a compra mais cara; empate → a mais antiga</li>
+      <li>Preço = <b>(compra + venda) / 2</b></li>
+      <li>Testes unitários: $20 / $10 / $30 → $25, sem match, empate</li>
+    </ul>
+    <div class="foot"><span>sem I/O · só regra de negócio</span><span>Responsável: <b>________________</b></span></div>
+  </div>
+
+  <!-- bottom panels -->
+  <div class="abs panel" style="left:30px;top:735px;width:760px;height:245px">
+    <h2>Combinado do time</h2>
+    <ul>
+      <li>Contratos em <b>contracts/</b> (OpenAPI + JSON Schema dos eventos). Mudou contrato? Avisa o time antes.</li>
+      <li>Um app Micronaut por serviço: <b>buyer-service/</b>, <b>seller-service/</b>, <b>transaction-coordinator/</b></li>
+      <li>Cada dev na sua branch → PR para <b>main</b></li>
+      <li>Teste unitário e de integração em todo serviço</li>
+      <li>Prompts e pesquisas em <b>docs/ai/</b>, commitados</li>
+    </ul>
+  </div>
+
+  <div class="abs panel" style="left:810px;top:735px;width:760px;height:245px">
+    <h2>Plano · 90 min</h2>
+    <div class="bar">
+      <div style="width:11.1%;background:#64748b">0–10</div>
+      <div style="width:44.4%;background:#2563eb">10–50 · implementação em paralelo</div>
+      <div style="width:16.7%;background:#ea580c">50–65</div>
+      <div style="width:16.7%;background:#9333ea">65–80</div>
+      <div style="width:11.1%;background:#16a34a">80–90</div>
+    </div>
+    <div class="steps">
+      <span class="t"><i class="dot" style="background:#64748b"></i>0–10</span><span>Contratos ✓</span>
+      <span class="t"><i class="dot" style="background:#2563eb"></i>10–50</span><span>Cada dev no seu bloco, com testes unitários</span>
+      <span class="t"><i class="dot" style="background:#ea580c"></i>50–65</span><span>Integração ponta a ponta (docker-compose: Postgres + Kafka)</span>
+      <span class="t"><i class="dot" style="background:#9333ea"></i>65–80</span><span>Testes de integração, bugs, README</span>
+      <span class="t"><i class="dot" style="background:#16a34a"></i>80–90</span><span>PRs, merge final e demo</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
