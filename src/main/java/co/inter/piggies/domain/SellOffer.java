@@ -31,5 +31,15 @@ public class SellOffer {
     private Instant executedAt;
 
     /** Devolve false se já estava executada: o Kafka pode entregar o mesmo evento duas vezes. */
-    public boolean execute(UUID transactionId, BigDecimal price, Instant at) { throw new UnsupportedOperationException("TODO"); }
+    public boolean execute(UUID transactionId, BigDecimal price, Instant at) {
+        if (status == OfferStatus.EXECUTED) {
+            return false;
+        }
+
+        this.status = OfferStatus.EXECUTED;
+        this.transactionId = transactionId;
+        this.executedPrice = price;
+        this.executedAt = at;
+        return true;
+    }
 }
